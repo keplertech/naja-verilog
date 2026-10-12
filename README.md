@@ -461,4 +461,5 @@ and port callbacks expose their declaration production. Shared declarations use
 a shared span. These are partial declaration spans, not full definition bodies.
 Preprocessed input has no original source map; consumers must not interpret its
 expanded ranges as coordinates in the original file. No source text or AST needs
-to be retained.
+to be retained. Native Bazel builds generate the parser/scanner with module-owned
+Bison/Flex and scanner headers, including when consumed by another project.
