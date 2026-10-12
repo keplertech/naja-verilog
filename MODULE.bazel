@@ -22,9 +22,8 @@ bazel_dep(name = "rules_cc", version = "0.2.22")
 bazel_dep(name = "googletest", version = "1.18.0")
 
 # googletest 1.18.0 uses abseil-cpp 20260526.0 (compatibility level 0),
-# while the protobuf dependency selected by rules_cc still uses
-# abseil-cpp 20250814.1 (compatibility level 1). Permit both until those
-# upstream dependency graphs converge on the same compatibility level.
+# while protobuf uses abseil-cpp 20250814.1 (compatibility level 1).
+# Allow both for standalone builds; consumers ignore this root-only override.
 multiple_version_override(
     module_name = "abseil-cpp",
     versions = [
@@ -33,18 +32,6 @@ multiple_version_override(
     ],
 )
 
-system_tool_repository = use_repo_rule(
-    "//bazel:system_tool.bzl",
-    "system_tool_repository",
-)
-
-system_tool_repository(name = "bison_tool", tool = "bison")
-system_tool_repository(name = "flex_tool", tool = "flex")
-system_tool_repository(name = "m4_tool", tool = "m4")
-
-flex_headers_repository = use_repo_rule(
-    "//bazel:system_tool.bzl",
-    "flex_headers_repository",
-)
-
-flex_headers_repository(name = "flex_headers")
+# Parser generation and scanner headers come from modules, also as a dependency.
+bazel_dep(name = "bison", version = "3.8.2.bcr.10")
+bazel_dep(name = "flex", version = "2.6.4.bcr.6")

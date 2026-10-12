@@ -4,41 +4,42 @@
 
 # Core naja-verilog library and executable targets.
 
-load("//bazel:verilog_codegen.bzl", "verilog_bison_parser", "verilog_flex_scanner")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("@bison//:bison.bzl", "bison")
+load("@flex//:flex.bzl", "flex")
 
-verilog_bison_parser(
+bison(
     name = "VerilogParser",
-    src = "src/VerilogParser.yy",
+    srcs = ["src/VerilogParser.yy"],
+    outs = ["src/VerilogParser.cpp", "src/VerilogParser.hpp", "src/location.hh"],
+    args = [
+        "--output=$(execpath src/VerilogParser.cpp)",
+        "--defines=$(execpath src/VerilogParser.hpp)",
+        "$(execpath src/VerilogParser.yy)",
+    ],
 )
 
-verilog_flex_scanner(
+flex(
     name = "VerilogScanner_gen",
-    src = "src/VerilogScanner.ll",
-)
-
-filegroup(
-    name = "VerilogParser_srcs",
-    srcs = [":VerilogParser"],
-    output_group = "cc_srcs",
-)
-
-filegroup(
-    name = "VerilogParser_hdrs",
-    srcs = [":VerilogParser"],
-    output_group = "cc_hdrs",
+    srcs = ["src/VerilogScanner.ll"],
+    outs = ["src/VerilogScanner_gen.cpp"],
+    args = ["--c++", "--outfile=$(execpath src/VerilogScanner_gen.cpp)", "$(execpath src/VerilogScanner.ll)"],
 )
 
 cc_library(
     name = "naja_verilog",
     srcs = [
-        ":VerilogParser_srcs",
+        "src/VerilogParser.cpp",
         ":VerilogScanner_gen",
         "src/VerilogTypes.cpp",
         "src/VerilogPreprocessor.cpp",
         "src/VerilogConstructor.cpp",
     ],
     hdrs = [
-        ":VerilogParser_hdrs",
+        "src/VerilogParser.hpp",
+        "src/location.hh",
         "src/VerilogTypes.h",
         "src/VerilogPreprocessor.h",
         "src/VerilogConstructor.h",
@@ -46,7 +47,7 @@ cc_library(
         "src/VerilogScanner.h",
     ],
     includes = ["src"],
-    deps = ["@flex_headers//:headers"],
+    deps = ["@flex//:headers"],
     visibility = ["//visibility:public"],
 )
 

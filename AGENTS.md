@@ -29,7 +29,7 @@ bazel test //...
 ```
 
 Those workflows do not initialize git submodules: bzlmod fetches
-googletest, while Bison, Flex, and M4 are resolved from the host. Bazel
+googletest, Bison, Flex, M4 and scanner headers from Bazel modules. Bazel
 is not CI's primary gate and does not need to reproduce CMake-specific
 coverage, valgrind, sanitizer, CodeQL, Emscripten, or installation
 behavior. Its role is to prove that the native Bazel module still
