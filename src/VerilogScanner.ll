@@ -53,7 +53,7 @@ COMMENT_LINE  "//".*\n
 
 IDENTIFIER [_a-zA-Z][$_a-zA-Z0-9]*
 UNSIGNED_NUMBER [0-9][0-9_]*
-STRING \"[^\"]*\"
+STRING \"([^\"\\]|\\.)*\"
 
 
 /* 
