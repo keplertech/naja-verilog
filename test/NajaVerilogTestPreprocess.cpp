@@ -318,13 +318,21 @@ TEST(NajaVerilogTestPreprocess, unsupportedDirectiveThrows) {
   EXPECT_THROW(constructor.parse(testPath), naja::verilog::VerilogException);
 }
 
-TEST(NajaVerilogTestPreprocess, stringLiteralAssignNotSupportedThrows) {
+TEST(NajaVerilogTestPreprocess, stringLiteralEscapesAreTokenized) {
   std::filesystem::path testPath(
     std::filesystem::path(NAJA_VERILOG_BENCHMARKS)
     / std::filesystem::path("preprocess/preprocess_string_escape.v"));
   VerilogConstructorTest constructor;
   constructor.setPreprocessEnabled(true);
-  EXPECT_THROW(constructor.parse(testPath), naja::verilog::VerilogException);
+  constructor.parse(testPath);
+  constructor.setFirstPass(false);
+  constructor.parse(testPath);
+  ASSERT_EQ(1, constructor.modules_.size());
+  const auto& assigns = constructor.modules_[0]->assigns_;
+  ASSERT_EQ(3, assigns.size());
+  EXPECT_EQ(naja::verilog::Expression::Type::STRING, assigns.back().expression_.value_.index());
+  EXPECT_NE(std::string::npos, assigns.back().expression_.getString().find("`ESCAPED_MACRO"));
+  EXPECT_NE(std::string::npos, assigns.back().expression_.getString().find('"'));
 }
 
 TEST(NajaVerilogTestPreprocess, preprocessToString) {

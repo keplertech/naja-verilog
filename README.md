@@ -451,3 +451,14 @@ endmodule
 ```
 
 <div align="right">[ <a href="#naja-verilog">↑ Back to top ↑</a> ]</div>
+
+### Callback source ranges
+
+`VerilogConstructor::getCurrentSourceRange()` reports one-based byte coordinates
+with exclusive endpoints independently of `getCurrentLocation()`. Module-start
+callbacks expose the module keyword/name; instance callbacks expose names; net
+and port callbacks expose their declaration production. Shared declarations use
+a shared span. These are partial declaration spans, not full definition bodies.
+Preprocessed input has no original source map; consumers must not interpret its
+expanded ranges as coordinates in the original file. No source text or AST needs
+to be retained.

@@ -56,6 +56,23 @@ class VerilogConstructor {
       line_= line; column_ = column;
     }
 
+    // Declaration ranges use one-based byte columns and exclusive endpoints.
+    // They describe the grammar production available at the callback (a module
+    // header, instance name, or port/net declaration), not a full definition.
+    // Preprocessing has no source map yet; callers must not use expanded ranges
+    // as locations in the original input.
+    struct SourceRange {
+      unsigned line {0};
+      unsigned column {0};
+      unsigned endLine {0};
+      unsigned endColumn {0};
+    };
+    SourceRange getCurrentSourceRange() const { return sourceRange_; }
+    void setCurrentSourceRange(unsigned line, unsigned column,
+                               unsigned endLine, unsigned endColumn) {
+      sourceRange_ = {line, column, endLine, endColumn};
+    }
+
     //LCOV_EXCL_START
     virtual void startModule(const Identifier& id) {}
     //Simple Port declaration (only name), no range, no direction in module interface
@@ -114,6 +131,7 @@ class VerilogConstructor {
     std::filesystem::path currentPath_  {};
     unsigned              line_         {0};
     unsigned              column_       {0};
+    SourceRange           sourceRange_  {};
     bool                  preprocessEnabled_ {false};
 };
 

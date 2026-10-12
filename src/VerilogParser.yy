@@ -259,10 +259,12 @@ range.opt: %empty { $$.valid_ = false; } | range { $$ = $1; }
 
 port_declaration: list_of_attribute_instance.opt port_type_io range.opt identifier {
   $$ = Port($4, $2, $3);
+  constructor->setCurrentSourceRange(@2.begin.line, @2.begin.column, @4.end.line, @4.end.column);
 }
 
 internal_ports_declaration: list_of_attribute_instance.opt port_type_io range.opt list_of_identifiers {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@2.begin.line, @2.begin.column, @4.end.line, @4.end.column);
   for (auto portIdentifier: $4) {
     constructor->internalModuleImplementationPort(Port(portIdentifier, $2, $3));
   }
@@ -282,6 +284,7 @@ constant_mintypmax_expression: constant_expression;
 
 defparam_assignment: hierarchical_parameter_identifier '=' constant_mintypmax_expression {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@$.begin.line, @$.begin.column, @$.end.line, @$.end.column);
   constructor->addDefParameterAssignment($1, $3);
 }
 
@@ -309,6 +312,7 @@ list_of_net_lvalues: hierarchical_net_identifier constant_range_expression.opt {
 
 net_assignment: net_lvalue '=' expression {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@$.begin.line, @$.begin.column, @$.end.line, @$.end.column);
   constructor->addAssign($1, $3);
 }
 
@@ -329,6 +333,7 @@ module_or_generate_item_declaration: net_declaration;
 net_declaration: net_type signed.opt range.opt list_of_identifiers ';' {
   for (auto netIdentifier: $4) {
     constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+    constructor->setCurrentSourceRange(@$.begin.line, @$.begin.column, @$.end.line, @$.end.column);
     constructor->addNet(Net(netIdentifier, $3, $1, $2));
   }
 }
@@ -413,6 +418,7 @@ expression.opt: %empty { $$.valid_ = false; } | expression { $$ = $1; }
 
 ordered_port_connection: expression {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@$.begin.line, @$.begin.column, @$.end.line, @$.end.column);
   constructor->addOrderedInstanceConnection(portIndex++, $1);
 }
 
@@ -425,6 +431,7 @@ port_identifier: identifier;
 
 named_port_connection: '.' port_identifier '(' expression.opt ')' {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@$.begin.line, @$.begin.column, @$.end.line, @$.end.column);
   constructor->addInstanceConnection($2, $4);
 }
 
@@ -441,6 +448,7 @@ name_of_module_instance: identifier
 
 module_instance: name_of_module_instance {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@1.begin.line, @1.begin.column, @1.end.line, @1.end.column);
   constructor->addInstance(std::move($1));
 } '(' list_of_port_connections.opt ')'
 
@@ -452,6 +460,7 @@ mintypmax_expression.opt: %empty { $$.valid_ = false; } | mintypmax_expression {
 
 named_parameter_assignment: '.' parameter_identifier '(' mintypmax_expression.opt ')' {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@$.begin.line, @$.begin.column, @$.end.line, @$.end.column);
   constructor->addParameterAssignment($2, $4);
 }
 
@@ -467,9 +476,11 @@ parameter_value_assignment: %empty | '#' '(' list_of_parameter_assignments ')'
 //(From A.4.1) 
 module_instantiation: module_identifier {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@$.begin.line, @$.begin.column, @$.end.line, @$.end.column);
   constructor->startInstantiation(std::move($1));
 } parameter_value_assignment list_of_module_instances ';' {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@$.begin.line, @$.begin.column, @$.end.line, @$.end.column);
   constructor->endInstantiation();
 }
 
@@ -477,6 +488,7 @@ module_identifier: identifier
 
 port: identifier {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@$.begin.line, @$.begin.column, @$.end.line, @$.end.column);
   constructor->internalModuleInterfaceSimplePort($1);
 }
 
@@ -501,9 +513,11 @@ list_of_module_args.opt: %empty | '(' ')' | '(' list_of_module_args ')';
 module_declaration: list_of_attribute_instance.opt {
 } MODULE_KW module_identifier {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@3.begin.line, @3.begin.column, @4.end.line, @4.end.column);
   constructor->internalStartModule(std::move($4));
 } list_of_module_args.opt ';' list_of_module_items.opt ENDMODULE_KW {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@$.begin.line, @$.begin.column, @$.end.line, @$.end.column);
   constructor->internalEndModule();
 }
 
@@ -517,6 +531,7 @@ attr_spec_value: %empty {
 
 attr_spec: identifier attr_spec_value {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@$.begin.line, @$.begin.column, @$.end.line, @$.end.column);
   constructor->addAttribute($1, $2);
 }
 
@@ -533,11 +548,13 @@ name_of_gate_instance.opt: %empty { $$ = naja::verilog::Identifier(); } | identi
 
 input_terminal: expression {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@$.begin.line, @$.begin.column, @$.end.line, @$.end.column);
   constructor->addGateInputInstanceConnection(portIndex++, $1);
 }
 
 output_terminal: net_lvalue {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@$.begin.line, @$.begin.column, @$.end.line, @$.end.column);
   constructor->addGateOutputInstanceConnection(portIndex++, $1);
 }
 
@@ -547,12 +564,14 @@ list_of_input_terminals: input_terminal | list_of_input_terminals ',' input_term
 
 n_input_gate_instance: name_of_gate_instance.opt {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@1.begin.line, @1.begin.column, @1.end.line, @1.end.column);
   constructor->addGateInstance(std::move($1));
   portIndex = 0;
 } '(' output_terminal ',' list_of_input_terminals ')' ;
 
 n_output_gate_instance: name_of_gate_instance.opt {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@1.begin.line, @1.begin.column, @1.end.line, @1.end.column);
   constructor->addGateInstance(std::move($1));
   portIndex = 0;
 } '(' output_terminal ',' input_terminal ')' ;
@@ -580,17 +599,21 @@ n_output_gatetype:
 gate_instantiation:
   n_input_gatetype {
     constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+    constructor->setCurrentSourceRange(@1.begin.line, @1.begin.column, @1.end.line, @1.end.column);
     constructor->startGateInstantiation($1);
   } list_of_n_input_gate_instances {
     constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+    constructor->setCurrentSourceRange(@$.begin.line, @$.begin.column, @$.end.line, @$.end.column);
     constructor->endGateInstantiation();
   }
   ';'
 | n_output_gatetype {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@1.begin.line, @1.begin.column, @1.end.line, @1.end.column);
   constructor->startGateInstantiation($1);
 } list_of_n_output_gate_instances {
   constructor->setCurrentLocation(@$.begin.line, @$.begin.column);
+  constructor->setCurrentSourceRange(@$.begin.line, @$.begin.column, @$.end.line, @$.end.column);
   constructor->endGateInstantiation();
 }
 ';'
